@@ -1,10 +1,10 @@
-/*
- * CortexM_OS_Porting.c
- *
- *  Created on: Apr 9, 2024
- *      Author: mh_sm
- */
-/* CMSIS INCLUDES */
+/****************************************************************/
+/* Author  : Mohamed Abdel Hamid                                */
+/* Date    : 7 / 6 / 2024                             	        */
+/* Version : V01                                                */
+/* Email   : mohamedhamiid20@gmail.com                          */
+/* Brief   : Handling Ports according to STM32F1 ARM CortexM3   */
+/****************************************************************/
 
 #include "Task.h"
 #include "System.h"
@@ -139,7 +139,6 @@ void OS_voidHwInit(){
 	__NVIC_SetPriority(PendSV_IRQn,15);
 
 }
-extern uint32_t SystemCoreClock;
 void OS_voidStartTimer(){
 	/* By default:
 	 * CPU and SysTick clock = 72 MHZ
@@ -150,6 +149,27 @@ void OS_voidStartTimer(){
 	SysTick_Config(Loc_u8Count);
 }
 
+/** PendSV_Handler
+ * @brief PendSV Handler for context switching between tasks.
+ *
+ * This function performs context switching by saving the context of the current task and restoring
+ * the context of the next task. It is designed to be used with an ARM Cortex-M processor.
+ * The function is marked as `naked` to avoid compiler-generated prologue and epilogue code.
+ *
+ * @details
+ * The function performs the following steps:
+ * 1. Checks if there is a next task to switch to (`OS_StructOS.NextTask != NULL`).
+ * 2. Saves the current task's context:
+ *    - Gets the current Process Stack Pointer (PSP) and updates the task structure.
+ *    - Manually pushes the registers R4 to R11 onto the stack.
+ * 3. Switches to the next task:
+ *    - Sets the current task to the next task.
+ *    - Clears the next task pointer.
+ * 4. Restores the next task's context:
+ *    - Manually restores the registers R4 to R11 from the stack.
+ *    - Sets the PSP to the next task's PSP.
+ * 5. Branches to the link register (LR) to exit the handler.
+ */
 __attribute((naked)) void PendSV_Handler(void)
 {
 	/* Context Switching */

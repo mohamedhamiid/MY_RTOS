@@ -1,9 +1,10 @@
-/*
- * MyRTOSConfig.h
- *
- *  Created on: Jul 6, 2024
- *      Author: mh_sm
- */
+/****************************************************************/
+/* Author  : Mohamed Abdel Hamid                                */
+/* Date    : 7 / 6 / 2024                             	        */
+/* Version : V01                                                */
+/* Email   : mohamedhamiid20@gmail.com                          */
+/* Brief   : File for user to configure RTOS main parameters    */
+/****************************************************************/
 
 #ifndef INC_MYRTOSCONFIG_H_
 #define INC_MYRTOSCONFIG_H_

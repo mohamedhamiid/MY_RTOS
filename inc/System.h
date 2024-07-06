@@ -1,10 +1,10 @@
-/*
- * Scheduler_priv.h
- *
- *  Created on: Apr 12, 2024
- *      Author: mh_sm
- */
-
+/**********************************************************/
+/* Author  : Mohamed Abdel Hamid                          */
+/* Date    : 7 / 6 / 2024                             	  */
+/* Version : V01                                          */
+/* Email   : mohamedhamiid20@gmail.com                    */
+/* Brief   : Handling system structures                   */
+/**********************************************************/
 #ifndef INC_SYSTEM_H_
 #define INC_SYSTEM_H_
 
@@ -12,9 +12,21 @@
 #include "Task.h"
 #include "System.h"
 
+// Macro: OS_STACK_PADDING
+// Description: Defines the padding size (in bytes) used between the end of one stack allocation
+//              and the start of another. Ensures alignment between different stack regions or tasks.
 #define OS_STACK_PADDING 8
 
-// OS Structure
+// Macro: OS_REQUEST_SERVICE(SVC_ID)
+// Description: Initiates a request for a specific service call (SVC) identified by SVC_ID.
+//              Uses inline assembly to generate a Supervisor Call (SVC) instruction with the
+//              provided SVC_ID as an immediate operand. This triggers an SVC exception,
+//              allowing the operating system to handle the requested service.
+#define OS_REQUEST_SERVICE(SVC_ID)  __asm volatile ("SVC %[SVCid]" : : [SVCid] "i" (SVC_ID));
+
+/**
+ * @brief Structure defining the operating system (OS) attributes.
+ */
 extern struct{
 	u8  NoOfCreatedTasks;
 	u32 _S_MSP_Task ;               // Start of main(OS) stack
@@ -30,7 +42,9 @@ extern struct{
 
 }OS_StructOS;
 
-// SVC IDs
+/**
+ * @brief Enumeration defining the Service Call (SVC) IDs for the operating system.
+ */
 extern enum{
 	SVC_ACTIVATE      ,
 	SVC_TERMINATE     ,
@@ -39,9 +53,6 @@ extern enum{
 	SVC_ACQUIRE_MUTEX ,
 	SVC_RELEASE_MUTEX
 }OS_enumSvcID;
-
-// OS
-#define OS_REQUEST_SERVICE(SVC_ID)  __asm volatile ("SVC %[SVCid]" : : [SVCid] "i" (SVC_ID));
 
 void OS_enumUpdateNoOfTicks();
 
