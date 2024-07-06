@@ -10,6 +10,7 @@
 #include "System.h"
 #include "Scheduler.h"
 #include "Porting_CortexM.h"
+#include "MyRTOSConfig.h"
 
 /* Variable for ticker checking */
 uint8_t Global_u8SystickLed;
@@ -138,13 +139,15 @@ void OS_voidHwInit(){
 	__NVIC_SetPriority(PendSV_IRQn,15);
 
 }
+extern uint32_t SystemCoreClock;
 void OS_voidStartTimer(){
 	/* By default:
 	 * CPU and SysTick clock = 72 MHZ
 	 * 1 count -> (1/72) us
 	 * x count -> 1 ms
 	 * x = 72000 */
-	SysTick_Config(12065);
+	u32 Loc_u8Count = OS_TICK_TIME_IN_MS * OS_CPU_CLOCK_FREQ_IN_MHZ ;
+	SysTick_Config(Loc_u8Count);
 }
 
 __attribute((naked)) void PendSV_Handler(void)
@@ -156,51 +159,43 @@ __attribute((naked)) void PendSV_Handler(void)
 		 * the returned PSP is after the CPU pushes XPSR, LR, PC, R0->R3,R12 */
 		OS_GET_PSP(OS_StructOS.CurrentTask->CurrentPSP);
 		/* 2- Push R4-> R11 manually */
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R4":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R5":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R6":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R7":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R8":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R9":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R10":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R11":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		volatile uint32_t *psp = OS_StructOS.CurrentTask->CurrentPSP;
+
+		// Save registers R4 to R11
+		for (int i = 4; i <= 11; i++) {
+		    __asm volatile("MOV %0, %1" : "=r"(*(--psp)) : "r"(i));
+		}
+
+		// Update the PSP in the task structure
+		OS_StructOS.CurrentTask->CurrentPSP = psp;
 
 		/* Restore the context of current */
-
 		OS_StructOS.CurrentTask = OS_StructOS.NextTask;
 		OS_StructOS.NextTask = 	NULL;
+
 		/* The last value of the CurrentPSP of the current task is that is
-		 * pointing to R11 */
-		/* 1- Restore manually pushed registers */
+	     * pointing to R11 */
+	    /* 1- Restore manually pushed registers */
+	    __asm volatile("MOV R11 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+	    OS_StructOS.CurrentTask->CurrentPSP++;
+	    __asm volatile("MOV R10 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+	    OS_StructOS.CurrentTask->CurrentPSP++;
+	    __asm volatile("MOV R9 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+	    OS_StructOS.CurrentTask->CurrentPSP++;
+	    __asm volatile("MOV R8 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+	    OS_StructOS.CurrentTask->CurrentPSP++;
+	    __asm volatile("MOV R7 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+	    OS_StructOS.CurrentTask->CurrentPSP++;
+	    __asm volatile("MOV R6 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+	    OS_StructOS.CurrentTask->CurrentPSP++;
+	    __asm volatile("MOV R5 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+	    OS_StructOS.CurrentTask->CurrentPSP++;
+	    __asm volatile("MOV R4 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+	    OS_StructOS.CurrentTask->CurrentPSP++;
 
-		__asm volatile("MOV R11 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
-		__asm volatile("MOV R10 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
-		__asm volatile("MOV R9 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
-		__asm volatile("MOV R8 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
-		__asm volatile("MOV R7 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
-		__asm volatile("MOV R6 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
-		__asm volatile("MOV R5 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
-		__asm volatile("MOV R4 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
-
-		/* 2- Set PSP to the the task */
-		OS_SET_PSP(OS_StructOS.CurrentTask->CurrentPSP);
-		/* Now the CPU can restore automatically */
+	    /* 2- Set PSP to the the task */
+	    OS_SET_PSP(OS_StructOS.CurrentTask->CurrentPSP);
+	    /* Now the CPU can restore automatically */
 	}
 	__asm volatile("BX LR");
 }

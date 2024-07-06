@@ -30,20 +30,28 @@ void OS_voidSortSchedulerTable(){
 void OS_voidUpdateReadyQueue(){
 
 	OS_structTask* temp = NULL ;
+	OS_structTask* loc_structCurrentTask = NULL ;
+	OS_structTask* loc_structNextTask = NULL ;
     // 1- Free ready queue
     while(OS_enumFifoDequeue(&Global_structReadyQueue, &temp) != FIFO_EMPTY);
 
     // 2- Update ready queue
     for(u8 i = 0; i < OS_StructOS.NoOfCreatedTasks; i++){
+    	loc_structCurrentTask = OS_StructOS.TaskTable[i];
+    	loc_structNextTask = OS_StructOS.TaskTable[i+1];
         // Check if the task is not suspended
-        if(OS_StructOS.TaskTable[i]->TaskState != OS_TASK_SUSPEND){
-            // Enqueue the task into the ready queue
-            OS_enumFifoEnqueue(&Global_structReadyQueue, OS_StructOS.TaskTable[i]);
-            // Update task state to ready
-            OS_StructOS.TaskTable[i]->TaskState = OS_TASK_READY;
-            // Break if it's the last task or if the next task has a different priority
-            if((i == OS_StructOS.NoOfCreatedTasks - 1) || (OS_StructOS.TaskTable[i]->Priority != OS_StructOS.TaskTable[i + 1]->Priority))
-                break;
+        if(loc_structCurrentTask->TaskState != OS_TASK_SUSPEND){
+
+        	if((loc_structNextTask->TaskState == OS_TASK_SUSPEND) || (loc_structCurrentTask->Priority<loc_structNextTask->Priority)){
+        		OS_enumFifoEnqueue(&Global_structReadyQueue, loc_structCurrentTask);
+        		loc_structCurrentTask->TaskState = OS_TASK_READY ;
+        		break;
+        	}
+        	if(loc_structCurrentTask->Priority == loc_structNextTask->Priority){
+        		OS_enumFifoEnqueue(&Global_structReadyQueue, loc_structCurrentTask);
+        		loc_structCurrentTask->TaskState = OS_TASK_READY ;
+        	}
+
         }
 
     }
@@ -54,13 +62,13 @@ void OS_voidUpdateReadyQueue(){
 void OS_voidDecideNext(){
 	/* 1- Check if ready queue is not empty and current task running CPU
 	 * is not suspend then maintain current task running */
-	if(Global_structReadyQueue.counter == 0 && OS_StructOS.CurrentTask->TaskState != OS_TASK_SUSPEND){
+	if((Global_structReadyQueue.counter == 0) && (OS_StructOS.CurrentTask->TaskState != OS_TASK_SUSPEND)){
 		// Mark the current task running
 		OS_StructOS.CurrentTask->TaskState = OS_TASK_RUNNING;
 		// Enqueue the current task
 		OS_enumFifoEnqueue(&Global_structReadyQueue, OS_StructOS.CurrentTask);
 		// Make the next
-		OS_StructOS.NextTask->TaskState = OS_StructOS.CurrentTask->TaskState;
+		OS_StructOS.NextTask = OS_StructOS.CurrentTask;
 	}
 	else{
 		// Get the next task from queue
@@ -69,7 +77,7 @@ void OS_voidDecideNext(){
 		OS_StructOS.NextTask->TaskState = OS_TASK_RUNNING ;
 		/* Before enqueue the current task make sure that it has the same priority as next task
 		    to maintain round robin */
-		if((OS_StructOS.NextTask->Priority == OS_StructOS.CurrentTask->Priority)&&OS_StructOS.CurrentTask->TaskState!=OS_TASK_SUSPEND){
+		if((OS_StructOS.NextTask->Priority == OS_StructOS.CurrentTask->Priority)&&(OS_StructOS.CurrentTask->TaskState!=OS_TASK_SUSPEND)){
 			// enqueue the current task to ready queue
 			OS_enumFifoEnqueue(&Global_structReadyQueue, OS_StructOS.CurrentTask);
 			// make it's state ready
@@ -117,14 +125,14 @@ void OS_enumUpdateNoOfTicks(){
 	for(u8 i=0 ; i<OS_StructOS.NoOfCreatedTasks;i++){
 		if(OS_StructOS.TaskTable[i]->Waiting.Blocking == OS_TASK_BLOCKING_ENABLE){
 			OS_StructOS.TaskTable[i]->Waiting.TicksCount--;
-			if(OS_StructOS.TaskTable[i]->Waiting.TicksCount == 0){
+			if(OS_StructOS.TaskTable[i]->Waiting.TicksCount == 1){
 				OS_StructOS.TaskTable[i]->TaskState = OS_TASK_WAITING;
 				OS_StructOS.TaskTable[i]->Waiting.Blocking = OS_TASK_BLOCKING_DISABLE;
+				/* Request waiting to SVC to update scheduler table */
+				OS_REQUEST_SERVICE(SVC_WAITING);
 			}
 		}
 	}
-	/* Request waiting to SVC to update scheduler table */
-	OS_REQUEST_SERVICE(SVC_TERMINATE);
 }
 
 uint8_t Global_u8IdleTaskLed;

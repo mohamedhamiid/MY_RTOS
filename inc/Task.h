@@ -53,22 +53,12 @@ typedef enum {
 }OS_enumErrorStatus;
 
 
-
-typedef enum{
-	OS_MUTEX_BUSY ,
-	OS_MUTEX_AVAILABLE ,
-}OS_enumMutexState;
-
-#define LOWEST_PRIORITY  255
-#define HIGHEST_PRIORITY 0
-
 /* API */
 OS_enumErrorStatus OS_enumInit();
 OS_enumErrorStatus OS_enumCreateTask(OS_structTask* Add_structTask);
 OS_enumErrorStatus OS_enumActivateTask(OS_structTask* Add_structTask);
 OS_enumErrorStatus OS_enumTerminateTask(OS_structTask* Add_structTask);
 OS_enumErrorStatus OS_enumDelayTask(OS_structTask* Add_structTask,u32 Copy_u32NoOfTicks);
-OS_enumMutexState OS_voidAcquireMutex();
 OS_enumErrorStatus OS_enumStartOS();
 
 

@@ -12,7 +12,7 @@
 #include "FIFO.h"
 #include "Scheduler.h"
 #include "Porting_CortexM.h"
-
+#include "MyRTOSConfig.h"
 extern OS_structTask Global_structIdleTask;
 extern OS_tBuffer Global_structReadyQueue;
 extern OS_structTask* Global_structReadyQueueFIFO[100];
@@ -42,9 +42,6 @@ OS_enumErrorStatus OS_enumCreateTask(OS_structTask* Add_structTask){
 }
 
 
-
-
-OS_enumMutexState OS_voidAcquireMutex(){}
 OS_enumErrorStatus OS_enumActivateTask(OS_structTask* Add_structTask){
 	/* Change State from Suspend to Waiting */
 	Add_structTask->TaskState = OS_TASK_WAITING ;
@@ -88,7 +85,7 @@ OS_enumErrorStatus OS_enumInit(){
 
 	// Idle Task
 	strcpy(Global_structIdleTask.TaskName , "IDLE");
-	Global_structIdleTask.Priority = LOWEST_PRIORITY;
+	Global_structIdleTask.Priority = OS_LOWEST_PRIORITY;
 	Global_structIdleTask.func = OS_voidIdleTask;
 	Global_structIdleTask.StackSize = 300 ;
 	Error += OS_enumCreateTask(&Global_structIdleTask);
