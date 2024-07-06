@@ -26,5 +26,5 @@ MyRTOS is a lightweight, real-time operating system designed for ARM Cortex M3 m
 
 2. Include header files in your project.
 3. Add source files to your project.
-4. Configure the MyRTOS through <span style="color:blue">MyRTOSConfig</span> according to your system requirements, such as stack sizes, maximum tasks, etc.
+4. Configure the MyRTOS through <span style="background-color:blue">MyRTOSConfig</span> according to your system requirements, such as stack sizes, maximum tasks, etc.
 
