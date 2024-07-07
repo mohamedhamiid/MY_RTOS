@@ -105,15 +105,7 @@ Here is APIs of MyRTOS:
 2. Deadlock avoidance
 ## Testing
 ### Round Robin Scheduling
-#### Scheduling
 ![context switching time](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/88eca129-4c1e-4783-b405-5985010daff0)
-#### Process Stacks in switching between T2 and T3
-![annotated Stack and registers before context](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/b05299ee-2c9b-45bf-a360-39e7aeb0f4bd)
-![annotated Stack and registers after storing task 2 registers values in memory](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/43a5e4dd-ac6d-4db0-929b-f263e7e7c56c)
-![Annotated Stack and registers restore task 3 data](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/d7bc8dd2-8f46-4b3e-886a-56b2908a67fc)
-![Annotated PSP i![Uploading [annota![Annotated Stack and registers restore task 3 data](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/0ef632fa-fc67-4d30-acdd-43713f1dd4c1)
-ted]Stack and registers before context.png…]()
-s set to Task 3](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/6c9f6c5b-cd23-4179-8e8d-0f333b9bea33)
 ---
 ### Preepmtion based on priority
 #### T2 is activated from T1, T3 is activated from T2, and T4 is activated from T3, such that the priority is T4 > T3 > T2 > T1.
