@@ -33,7 +33,7 @@ MyRTOS is a lightweight, real-time operating system designed for ARM Cortex M3 m
 6. Initialize MyRTOS using the _OS_enumInit()_ function in your application code.
 7. Initialize task by configuring it
    ```c
-   void tast1(){
+   void task1(){
       while(1){
          // Your Code
       }
