@@ -34,8 +34,6 @@ MyRTOS is a lightweight, real-time operating system designed for ARM Cortex M3 m
    	t1.Priority = 1;
 	strcpy(t1.TaskName,"Task 1");
 	t1.StackSize = 1024;
-
-
 8. Create tasks using the _OS_enumCreateTask(&t1)_ function and implement your task functions.
 9. Start the operating system using MyRTOS_startOS to begin task scheduling.
    <span style="background-color: #FFFF00">Marked text</span>
