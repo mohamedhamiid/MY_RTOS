@@ -126,5 +126,8 @@ s set to Task 3](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/6c9f6
 ![1](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/65cf820a-a750-4eb3-b0a3-07fc589e32f9)
 ### Deadlock
 ![Deadlock example](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/e2a834ef-a666-47c6-bce4-885f82495248)
+### No task activated (Idle state)
+![Idle Task when using WFE](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/278317c3-616b-4673-9582-fca0cfea6664)
+
 
 
