@@ -168,7 +168,6 @@ OS_enumErrorStatus OS_enumActivateTask(OS_structTask* Add_structTask);
  * // Terminates 'myTask' by changing its state to suspended and requesting termination via SVC.
  * @endcode
  */
-OS_enum
 OS_enumErrorStatus OS_enumTerminateTask(OS_structTask* Add_structTask);
 /** OS_enumDelayTask
  * @brief Initializes the operating system.
