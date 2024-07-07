@@ -114,7 +114,7 @@ Here is APIs of MyRTOS:
 ![Annotated PSP i![Uploading [annota![Annotated Stack and registers restore task 3 data](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/0ef632fa-fc67-4d30-acdd-43713f1dd4c1)
 ted]Stack and registers before context.png…]()
 s set to Task 3](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/6c9f6c5b-cd23-4179-8e8d-0f333b9bea33)
-<hr>
+<hr></hr>
 ### Preepmtion based on priority
 #### T2 is activated from T1, T3 is activated from T2, and T4 is activated from T3, such that the priority is T4 > T3 > T2 > T1.
 ![preemtion](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/da1a4fab-1f80-4310-9cb1-b8d61bda1f09)
