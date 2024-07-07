@@ -1,4 +1,4 @@
-![annotated Stack and registers after storing task 2 registers values in memory](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/2fa71bf1-7c88-483b-a2cb-a504548dfd90)# MyRTOS (Real-Time Operating System) for ARM Cortex M3
+# MyRTOS (Real-Time Operating System) for ARM Cortex M3
 
 MyRTOS is a lightweight, real-time operating system designed for ARM Cortex M3 microcontrollers, with a focus on efficiency. It provides a priority preemptive round-robin scheduler, memory management and a set of APIs to help you manage tasks and synchronization in your embedded systems projects.
 
