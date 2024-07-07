@@ -114,3 +114,11 @@ Here is APIs of MyRTOS:
 ![Annotated PSP i![Uploading [annota![Annotated Stack and registers restore task 3 data](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/0ef632fa-fc67-4d30-acdd-43713f1dd4c1)
 ted]Stack and registers before context.png…]()
 s set to Task 3](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/6c9f6c5b-cd23-4179-8e8d-0f333b9bea33)
+### Preepmtion based on priority
+![preemtion](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/da1a4fab-1f80-4310-9cb1-b8d61bda1f09)
+### Timing Control
+1. Periodicity of T1 is 100
+2. Periodicity of T2 is 100
+3. Periodicity of T3 is 500
+![T1=100,T2=100,T3=500](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/109f3603-8a5d-4150-99b3-ae68e00a8cd8)
+
