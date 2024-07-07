@@ -100,3 +100,6 @@ Here is APIs of MyRTOS:
     main(){
             OS_enumInitSemaphore(&s1, 1); // 1 indicates binary semaphore
     }
+## Features to be added
+1. Inter-process Communication
+2. Deadlock avoidance
