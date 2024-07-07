@@ -7,7 +7,7 @@ MyRTOS is a lightweight, real-time operating system designed for ARM Cortex M3 m
 - **Preemptive Priority Round-Robin Scheduling Algorithm**: Ensures fair task execution based on priority levels.
 - **Task Management**: Easily create, activate, and terminate tasks in your embedded applications.
 - **Timing Control** : Implement time-based waiting for tasks.
-- **Optimized Context Switching**: Minimizes latency and optimizes interrupt handling, achieving a context switching time of 60 microseconds.
+- **Optimized Context Switching**: Minimizes latency and optimizes interrupt handling, achieving a context switching time of 66 microseconds.
 - **Sleep Mode when Idle**: Enhances power efficiency by allowing the system to enter sleep mode when no tasks are active.
 - **Semaphore as Synchronization Tool**: Provides efficient synchronization between tasks, with built-in support for handling priority inversion.
 
