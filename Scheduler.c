@@ -140,6 +140,9 @@ void OS_voidDecideNext(){
 	else{
 		// Get the next task from queue
 		OS_enumFifoDequeue(&Global_structReadyQueue, &OS_StructOS.NextTask);
+
+		if(!OS_StructOS.NextTask)
+			OS_StructOS.NextTask = &Global_structIdleTask;
 		// make it's state running
 		OS_StructOS.NextTask->TaskState = OS_TASK_RUNNING ;
 		/* Before enqueue the current task make sure that it has the same priority as next task

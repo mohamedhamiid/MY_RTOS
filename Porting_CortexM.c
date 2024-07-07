@@ -179,43 +179,51 @@ __attribute((naked)) void PendSV_Handler(void)
 		 * the returned PSP is after the CPU pushes XPSR, LR, PC, R0->R3,R12 */
 		OS_GET_PSP(OS_StructOS.CurrentTask->CurrentPSP);
 		/* 2- Push R4-> R11 manually */
-		volatile uint32_t *psp = OS_StructOS.CurrentTask->CurrentPSP;
-
-		// Save registers R4 to R11
-		for (int i = 4; i <= 11; i++) {
-		    __asm volatile("MOV %0, %1" : "=r"(*(--psp)) : "r"(i));
-		}
-
-		// Update the PSP in the task structure
-		OS_StructOS.CurrentTask->CurrentPSP = psp;
+		OS_StructOS.CurrentTask->CurrentPSP--;
+		__asm volatile("MOV %0 , R4":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		OS_StructOS.CurrentTask->CurrentPSP--;
+		__asm volatile("MOV %0 , R5":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		OS_StructOS.CurrentTask->CurrentPSP--;
+		__asm volatile("MOV %0 , R6":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		OS_StructOS.CurrentTask->CurrentPSP--;
+		__asm volatile("MOV %0 , R7":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		OS_StructOS.CurrentTask->CurrentPSP--;
+		__asm volatile("MOV %0 , R8":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		OS_StructOS.CurrentTask->CurrentPSP--;
+		__asm volatile("MOV %0 , R9":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		OS_StructOS.CurrentTask->CurrentPSP--;
+		__asm volatile("MOV %0 , R10":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		OS_StructOS.CurrentTask->CurrentPSP--;
+		__asm volatile("MOV %0 , R11":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
 
 		/* Restore the context of current */
+
 		OS_StructOS.CurrentTask = OS_StructOS.NextTask;
 		OS_StructOS.NextTask = 	NULL;
-
 		/* The last value of the CurrentPSP of the current task is that is
-	     * pointing to R11 */
-	    /* 1- Restore manually pushed registers */
-	    __asm volatile("MOV R11 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-	    OS_StructOS.CurrentTask->CurrentPSP++;
-	    __asm volatile("MOV R10 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-	    OS_StructOS.CurrentTask->CurrentPSP++;
-	    __asm volatile("MOV R9 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-	    OS_StructOS.CurrentTask->CurrentPSP++;
-	    __asm volatile("MOV R8 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-	    OS_StructOS.CurrentTask->CurrentPSP++;
-	    __asm volatile("MOV R7 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-	    OS_StructOS.CurrentTask->CurrentPSP++;
-	    __asm volatile("MOV R6 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-	    OS_StructOS.CurrentTask->CurrentPSP++;
-	    __asm volatile("MOV R5 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-	    OS_StructOS.CurrentTask->CurrentPSP++;
-	    __asm volatile("MOV R4 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-	    OS_StructOS.CurrentTask->CurrentPSP++;
+		 * pointing to R11 */
+		/* 1- Restore manually pushed registers */
 
-	    /* 2- Set PSP to the the task */
-	    OS_SET_PSP(OS_StructOS.CurrentTask->CurrentPSP);
-	    /* Now the CPU can restore automatically */
+		__asm volatile("MOV R11 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		OS_StructOS.CurrentTask->CurrentPSP++;
+		__asm volatile("MOV R10 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		OS_StructOS.CurrentTask->CurrentPSP++;
+		__asm volatile("MOV R9 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		OS_StructOS.CurrentTask->CurrentPSP++;
+		__asm volatile("MOV R8 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		OS_StructOS.CurrentTask->CurrentPSP++;
+		__asm volatile("MOV R7 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		OS_StructOS.CurrentTask->CurrentPSP++;
+		__asm volatile("MOV R6 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		OS_StructOS.CurrentTask->CurrentPSP++;
+		__asm volatile("MOV R5 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		OS_StructOS.CurrentTask->CurrentPSP++;
+		__asm volatile("MOV R4 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+		OS_StructOS.CurrentTask->CurrentPSP++;
+
+		/* 2- Set PSP to the the task */
+		OS_SET_PSP(OS_StructOS.CurrentTask->CurrentPSP);
+		/* Now the CPU can restore automatically */
 	}
 	__asm volatile("BX LR");
 }
