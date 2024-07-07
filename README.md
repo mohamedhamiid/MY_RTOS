@@ -124,4 +124,7 @@ s set to Task 3](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/6c9f6
 ![T1=100,T2=100,T3=500](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/109f3603-8a5d-4150-99b3-ae68e00a8cd8)
 ### Synchronization and priority inversion
 ![1](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/65cf820a-a750-4eb3-b0a3-07fc589e32f9)
+### Deadlock
+![Deadlock example](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/e2a834ef-a666-47c6-bce4-885f82495248)
+
 
