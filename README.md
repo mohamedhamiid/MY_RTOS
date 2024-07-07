@@ -43,3 +43,40 @@ MyRTOS is a lightweight, real-time operating system designed for ARM Cortex M3 m
 8. Create task using the _OS_enumCreateTask(&t1)_ function.
 9. Start the operating system using _OS_enumStartOS();_ to begin task scheduling.
 
+## Usage
+Here is APIs of MyRTOS:
+<ul>
+<li>Initialization:</li>
+   ```c
+  OS_enumInit();
+   
+<li>Task Creation</li>
+  ```c
+   void tast1(){
+      while(1){
+         // Your Code
+      }
+   }
+   OS_structTask t1
+   t1.func = task1;
+   t1.Priority = 1;
+   strcpy(t1.TaskName,"Task 1");
+   t1.StackSize = 1024;
+   OS_enumCreateTask(&t1);
+
+
+Task_Reference myTask;
+MyRTOS_CreateTask(&myTask);
+Activating a Task:
+MyRTOS_ActivateTask(&myTask);
+Terminating a Task:
+MyRTOS_TerminateTask(&myTask);
+Starting the Operating System:
+MyRTOS_startOS();
+Waiting in a Task:
+MyRTOS_waitTask(ticks, &myTask);
+Acquiring and Releasing Mutex:
+Mutex_Reference myMutex;
+MyRTOS_AcquierMutex(&myMutex, &myTask);
+MyRTOS_ReleaseMutex(&myMutex);
+</ul>
