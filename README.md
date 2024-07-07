@@ -105,10 +105,10 @@ Here is APIs of MyRTOS:
 2. Deadlock avoidance
 ## Testing
 ### Round Robin Scheduling
-#### Process Stacks
+#### Scheduling
+![Screenshot 2024-07-04 150047](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/4e9f6f6c-9cb9-4dc2-8732-9cc53b746a7c)
+#### Process Stacks in switching between T2 and T3
 ![annotated Stack and registers after storing task 2 registers values in memory](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/72ac9d3b-7892-49e0-b486-441a6d45c044)
 ![Annotated PSP i![Uploading [annota![Annotated Stack and registers restore task 3 data](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/0ef632fa-fc67-4d30-acdd-43713f1dd4c1)
 ted]Stack and registers before context.png…]()
 s set to Task 3](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/6c9f6c5b-cd23-4179-8e8d-0f333b9bea33)
-#### Scheduling
-![Screenshot 2024-07-04 150047](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/4e9f6f6c-9cb9-4dc2-8732-9cc53b746a7c)
