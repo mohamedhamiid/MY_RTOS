@@ -114,11 +114,11 @@ Here is APIs of MyRTOS:
 ![Annotated PSP i![Uploading [annota![Annotated Stack and registers restore task 3 data](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/0ef632fa-fc67-4d30-acdd-43713f1dd4c1)
 ted]Stack and registers before context.png…]()
 s set to Task 3](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/6c9f6c5b-cd23-4179-8e8d-0f333b9bea33)
-<hr></hr>
+---
 ### Preepmtion based on priority
 #### T2 is activated from T1, T3 is activated from T2, and T4 is activated from T3, such that the priority is T4 > T3 > T2 > T1.
 ![preemtion](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/da1a4fab-1f80-4310-9cb1-b8d61bda1f09)
-<hr>
+---
 ### Timing Control
 1. Periodicity of T1 is 100
 2. Periodicity of T2 is 100
@@ -127,13 +127,13 @@ s set to Task 3](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/6c9f6
 ![T1=100,T2=100,T3=500](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/109f3603-8a5d-4150-99b3-ae68e00a8cd8)
 ![T1 deadline](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/7cc2ea38-5fbe-4431-b5df-41d8725d0a05)
 ![T3 deadline](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/b8237f5f-9287-4e3f-954d-46c527a00f02)
-<hr>
+---
 ### Synchronization and priority inversion
 ![1](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/65cf820a-a750-4eb3-b0a3-07fc589e32f9)
-<hr>
+---
 ### Deadlock
 ![Deadlock example](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/e2a834ef-a666-47c6-bce4-885f82495248)
-<hr>
+---
 ### No task activated (Idle state) --> CPU enters sleep mode
 ![Idle Task when using WFE](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/278317c3-616b-4673-9582-fca0cfea6664)
 
