@@ -28,7 +28,7 @@ MyRTOS is a lightweight, real-time operating system designed for ARM Cortex M3 m
 3. Add source files to your project.
 4. Configure the MyRTOS through _MyRTOSConfig_ according to your system requirements, such as tick time, CPU clock, etc.
 5. Initialize MyRTOS using the _OS_enumInit()_ function in your application code.
-6. Create task by _OS_structTask t1_ and configure it
+6. Create task by <span style="background-color: #cccccc">OS_structTask</span> t1 and configure it
    ```c
    	t1.func = task1;
    	t1.Priority = 1;
