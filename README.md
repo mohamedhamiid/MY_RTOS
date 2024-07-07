@@ -117,6 +117,8 @@ s set to Task 3](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/6c9f6
 ### Preepmtion based on priority
 ![preemtion](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/da1a4fab-1f80-4310-9cb1-b8d61bda1f09)
 ### Timing Control
+#### T2 is activated from T1, T3 is activated from T2 and T4 is activated from T3, such that priority T4>T3>T2>T1
+
 1. Periodicity of T1 is 100
 2. Periodicity of T2 is 100
 3. Periodicity of T3 is 500
