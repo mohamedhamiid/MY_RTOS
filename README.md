@@ -120,7 +120,7 @@ Here is APIs of MyRTOS:
 ![T1 deadline](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/7cc2ea38-5fbe-4431-b5df-41d8725d0a05)
 ![T3 deadline](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/b8237f5f-9287-4e3f-954d-46c527a00f02)
 ---
-### Synchronization and priority inversion
+### Synchronization
 ![1](https://github.com/mohamedhamiid/MY_RTOS/assets/111571591/65cf820a-a750-4eb3-b0a3-07fc589e32f9)
 ---
 ### Deadlock
