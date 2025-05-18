@@ -5,7 +5,6 @@
 /* Email   : mohamedhamiid20@gmail.com                          */
 /* Brief   : Handling Ports according to STM32F1 ARM CortexM3   */
 /****************************************************************/
-
 #include "Task.h"
 #include "System.h"
 #include "Scheduler.h"
@@ -87,17 +86,20 @@ void UsageFault_Handler(void)
     /* USER CODE END W1_UsageFault_IRQn 0 */
   }
 }
-
+extern u8 Global_u8Scheduler;
 void SysTick_Handler(void)
 {
 	/* For Testing */
 	Global_u8SystickLed ^= 1;
 	/* Update Number of Ticks */
 	OS_enumUpdateNoOfTicks();
+	Global_u8Scheduler ^=1;
 	/* Decide Current and Next task */
 	OS_voidDecideNext();
+	Global_u8Scheduler ^=1;
 	/* Trigger PendSV for switch context */
-	OS_TRIGGER_PENDSV();
+	if(OS_StructOS.NextTask && OS_StructOS.NextTask != OS_StructOS.CurrentTask)
+		OS_TRIGGER_PENDSV();
 }
 
 /* SVC Handler */
@@ -170,60 +172,128 @@ void OS_voidStartTimer(){
  *    - Sets the PSP to the next task's PSP.
  * 5. Branches to the link register (LR) to exit the handler.
  */
-__attribute((naked)) void PendSV_Handler(void)
-{
-	/* Context Switching */
-	/* Save the context of current */
-	if (OS_StructOS.NextTask != NULL){
-		/* 1- Get current PSP
-		 * the returned PSP is after the CPU pushes XPSR, LR, PC, R0->R3,R12 */
-		OS_GET_PSP(OS_StructOS.CurrentTask->CurrentPSP);
-		/* 2- Push R4-> R11 manually */
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R4":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R5":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R6":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R7":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R8":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R9":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R10":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP--;
-		__asm volatile("MOV %0 , R11":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
 
-		/* Restore the context of current */
+//__attribute__((naked)) void PendSV_Handler(void) {
+//    __asm volatile (
+//
+//        "   MRS     R0, PSP                     \n" // Load Process Stack Pointer (PSP)
+//        "   LDR     R3, =OS_StructOS            \n" // Load address of OS_StructOS
+//        "   LDR     R2, [R3, #20]               \n" // Load address of CurrentTask (Offset 16 in OS_StructOS)
+//
+//        // Save context of the current task
+//        "   STMDB   R0!, {R4-R11}               \n" // Store R4-R11 onto task's stack
+//        "   STR     R0, [R2]                    \n" // Save updated PSP into CurrentTask->CurrentPSP
+//
+//        // Switch to the next task
+//        "   LDR     R2, [R3, #24]               \n" // Load address of NextTask (Offset 20 in OS_StructOS)
+//        "   LDR     R0, [R2]                    \n" // Load PSP of the next task
+//        "   LDR     R1, [R3, #20]               \n" // Update CurrentTask to NextTask
+//        "   STR     R2, [R3, #20]               \n" // OS_StructOS.CurrentTask = OS_StructOS.NextTask
+//        "   MOV     R2, #0                      \n" // Clear NextTask
+//        "   STR     R2, [R3, #24]               \n" // OS_StructOS.NextTask = NULL
+//
+//        // Restore context of the next task
+//        "   LDMIA   R0!, {R4-R11}               \n" // Restore R4-R11 from task's stack
+//        "   MSR     PSP, R0                     \n" // Update PSP for the next task
+//
+//        "   BX      LR                          \n" // Return to Thread Mode
+//    );
+//}
 
-		OS_StructOS.CurrentTask = OS_StructOS.NextTask;
-		OS_StructOS.NextTask = 	NULL;
-		/* The last value of the CurrentPSP of the current task is that is
-		 * pointing to R11 */
-		/* 1- Restore manually pushed registers */
+// Declare the contextSwitch variable
+volatile uint8_t contextSwitch = 0;
 
-		__asm volatile("MOV R11 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
-		__asm volatile("MOV R10 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
-		__asm volatile("MOV R9 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
-		__asm volatile("MOV R8 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
-		__asm volatile("MOV R7 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
-		__asm volatile("MOV R6 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
-		__asm volatile("MOV R5 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
-		__asm volatile("MOV R4 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
-		OS_StructOS.CurrentTask->CurrentPSP++;
+__attribute__((naked)) void PendSV_Handler(void) {
+    __asm volatile (
+        // Set contextSwitch to 1 (indicating a context switch is in progress)
+        "   LDR     R3, =contextSwitch          \n"
+        "   MOVS    R2, #1                      \n"
+        "   STRB    R2, [R3]                    \n" // contextSwitch = 1
 
-		/* 2- Set PSP to the the task */
-		OS_SET_PSP(OS_StructOS.CurrentTask->CurrentPSP);
-		/* Now the CPU can restore automatically */
-	}
-	__asm volatile("BX LR");
+        "   MRS     R0, PSP                     \n" // Load Process Stack Pointer (PSP)
+        "   LDR     R3, =OS_StructOS            \n" // Load address of OS_StructOS
+        "   LDR     R2, [R3, #0]                \n" // Load address of CurrentTask (Offset 20 in OS_StructOS)
+
+        // Save context of the current task
+        "   STMDB   R0!, {R4-R11}               \n" // Store R4-R11 onto task's stack
+        "   STR     R0, [R2]                    \n" // Save updated PSP into CurrentTask->CurrentPSP
+
+        // Switch to the next task
+        "   LDR     R2, [R3, #4]                \n" // Load address of NextTask (Offset 24 in OS_StructOS)
+        "   LDR     R0, [R2]                    \n" // Load PSP of the next task
+        "   STR     R2, [R3, #0]                \n" // OS_StructOS.CurrentTask = OS_StructOS.NextTask
+        "   MOV     R2, #0                      \n" // Clear NextTask
+        "   STR     R2, [R3, #4]                \n" // OS_StructOS.NextTask = NULL
+
+        // Restore context of the next task
+        "   LDMIA   R0!, {R4-R11}               \n" // Restore R4-R11 from task's stack
+        "   MSR     PSP, R0                     \n" // Update PSP for the next task
+
+        // Clear contextSwitch (indicating context switch is complete)
+        "   LDR     R3, =contextSwitch          \n"
+        "   MOVS    R2, #0                      \n"
+        "   STRB    R2, [R3]                    \n" // contextSwitch = 0
+
+        "   BX      LR                          \n" // Return to Thread Mode
+    );
 }
+//__attribute((naked)) void PendSV_Handler(void)
+//{
+//	/* Context Switching */
+//	/* Save the context of current */
+//	if (OS_StructOS.NextTask != NULL){
+//		contextSwitch = 1;
+//		/* 1- Get current PSP
+//		 * the returned PSP is after the CPU pushes XPSR, LR, PC, R0->R3,R12 */
+//		OS_GET_PSP(OS_StructOS.CurrentTask->CurrentPSP);
+//		/* 2- Push R4-> R11 manually */
+//		OS_StructOS.CurrentTask->CurrentPSP--;
+//		__asm volatile("MOV %0 , R4":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//		OS_StructOS.CurrentTask->CurrentPSP--;
+//		__asm volatile("MOV %0 , R5":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//		OS_StructOS.CurrentTask->CurrentPSP--;
+//		__asm volatile("MOV %0 , R6":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//		OS_StructOS.CurrentTask->CurrentPSP--;
+//		__asm volatile("MOV %0 , R7":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//		OS_StructOS.CurrentTask->CurrentPSP--;
+//		__asm volatile("MOV %0 , R8":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//		OS_StructOS.CurrentTask->CurrentPSP--;
+//		__asm volatile("MOV %0 , R9":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//		OS_StructOS.CurrentTask->CurrentPSP--;
+//		__asm volatile("MOV %0 , R10":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//		OS_StructOS.CurrentTask->CurrentPSP--;
+//		__asm volatile("MOV %0 , R11":"=r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//
+//		/* Restore the context of current */
+//
+//		OS_StructOS.CurrentTask = OS_StructOS.NextTask;
+//		OS_StructOS.NextTask = 	NULL;
+//		/* The last value of the CurrentPSP of the current task is that is
+//		 * pointing to R11 */
+//		/* 1- Restore manually pushed registers */
+//
+//		__asm volatile("MOV R11 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//		OS_StructOS.CurrentTask->CurrentPSP++;
+//		__asm volatile("MOV R10 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//		OS_StructOS.CurrentTask->CurrentPSP++;
+//		__asm volatile("MOV R9 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//		OS_StructOS.CurrentTask->CurrentPSP++;
+//		__asm volatile("MOV R8 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//		OS_StructOS.CurrentTask->CurrentPSP++;
+//		__asm volatile("MOV R7 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//		OS_StructOS.CurrentTask->CurrentPSP++;
+//		__asm volatile("MOV R6 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//		OS_StructOS.CurrentTask->CurrentPSP++;
+//		__asm volatile("MOV R5 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//		OS_StructOS.CurrentTask->CurrentPSP++;
+//		__asm volatile("MOV R4 , %0"::"r"(*(OS_StructOS.CurrentTask->CurrentPSP)));
+//		OS_StructOS.CurrentTask->CurrentPSP++;
+//
+//		/* 2- Set PSP to the the task */
+//		OS_SET_PSP(OS_StructOS.CurrentTask->CurrentPSP);
+//		/* Now the CPU can restore automatically */
+//		contextSwitch = 0;
+//	}
+//	__asm volatile("BX LR");
+//}
+

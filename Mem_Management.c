@@ -76,7 +76,8 @@ OS_enumErrorStatus OS_enumCreateStack(OS_structTask* Add_structTask){
 
 	// LR --> 0xFFFFFFED Thread + PSP
 	Add_structTask->CurrentPSP--;
-	*(Add_structTask->CurrentPSP) = 0xFFFFFFFD;
+//	*(Add_structTask->CurrentPSP) = 0xFFFFFFFD;
+	*(Add_structTask->CurrentPSP) = 0x0000000E;
 
 
 	for(u32 i=0 ; i<13 ; i++){

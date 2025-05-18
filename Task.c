@@ -7,18 +7,17 @@
 /********************************************************************/
 #include <string.h>
 #include <STD_TYPES.h>
-#include "Task.h"
+#include "FIFO.h"
 #include "System.h"
 #include "Mem_Management.h"
-#include "FIFO.h"
 #include "Scheduler.h"
 #include "Porting_CortexM.h"
 #include "MyRTOSConfig.h"
+#include "Task.h"
 extern OS_structTask Global_structIdleTask;
-extern OS_tBuffer Global_structReadyQueue;
-extern OS_structTask* Global_structReadyQueueFIFO[100];
 
-
+extern OS_tBuffer Global_structReadyQueue[OS_TASK_PRIORITY_LEVELS]; // 8 * 32 = 256
+extern OS_structTask* Global_structReadyQueueFIFO[OS_TASK_PRIORITY_LEVELS][5];
 /** OS_enumCreateTask
  * @brief Creates a new task and initializes its stack and state.
  *
@@ -72,7 +71,6 @@ OS_enumErrorStatus OS_enumCreateTask(OS_structTask* Add_structTask){
 
 	return Error;
 }
-
 /** OS_enumActivateTask
  * @brief Activates a suspended task, changing its state to waiting.
  *
@@ -210,13 +208,15 @@ OS_enumErrorStatus OS_enumInit(){
 	Error += OS_enumCreateMainStack();
 
 	// Create Ready Queue
-	if(OS_enumFifoInit(&Global_structReadyQueue, Global_structReadyQueueFIFO, 100)!=FIFO_NO_ERROR){
-		Error+=FIFO_INIT_ERROR;
+	for(uint32_t i = 0; i<OS_TASK_PRIORITY_LEVELS;i++){
+		if(OS_enumFifoInit(&Global_structReadyQueue[i], Global_structReadyQueueFIFO[i], 5)!=FIFO_NO_ERROR){
+			Error+=FIFO_INIT_ERROR;
+		}
 	}
 
 	// Idle Task
 	strcpy(Global_structIdleTask.TaskName , "IDLE");
-	Global_structIdleTask.Priority = OS_LOWEST_PRIORITY;
+	Global_structIdleTask.Priority = 0;
 	Global_structIdleTask.func = OS_voidIdleTask;
 	Global_structIdleTask.StackSize = 300 ;
 	Error += OS_enumCreateTask(&Global_structIdleTask);

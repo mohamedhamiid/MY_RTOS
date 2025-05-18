@@ -4,8 +4,8 @@
 /* Version : V01                                          */
 /* Email   : mohamedhamiid20@gmail.com                    */
 /**********************************************************/
-#include "Task.h"
 #include "FIFO.h"
+#include "Task.h"
 #include "Semaphore.h"
 /** OS_enumInitSemaphore
  * @brief Initializes a semaphore structure with initial values.
@@ -75,19 +75,19 @@ OS_tenuSemaphoreState OS_enumInitSemaphore(OS_tstructSemaphore* Add_structSemaph
  * // Attempts to acquire 'mySemaphore' for 'myTask' and handles the semaphore state accordingly.
  * @endcode
  */
-OS_tenuSemaphoreState OS_enumAcquireSemaphore(OS_tstructSemaphore* Add_structSemaphore,OS_structTask*Add_structTask){
+OS_tenuSemaphoreState OS_enumAcquireSemaphore(OS_tstructSemaphore* Add_structSemaphore){
 	Add_structSemaphore->s--;
-	if(Add_structTask == Add_structSemaphore->currentOwner){
+	if(OS_StructOS.CurrentTask == Add_structSemaphore->currentOwner){
 		return OS_SEMAPHORE_ALREADY_ACQUIRED;
 	}
 	if (Add_structSemaphore->s < 0 && Add_structSemaphore->currentOwner) {
 		Add_structSemaphore->noOfWaiting++;
-		OS_enumFifoEnqueue(&(Add_structSemaphore->Global_structWaitingQueue), Add_structTask);
-		OS_enumTerminateTask(Add_structTask);
+		OS_enumFifoEnqueue(&(Add_structSemaphore->Global_structWaitingQueue), OS_StructOS.CurrentTask);
+		OS_enumTerminateTask(OS_StructOS.CurrentTask);
 		return OS_SEMAPHORE_BUSY;
 	}
 	else{
-		Add_structSemaphore->currentOwner = Add_structTask;
+		Add_structSemaphore->currentOwner = OS_StructOS.CurrentTask;
 	}
 	return OS_SEMAPHORE_AVAILABLE;
 }

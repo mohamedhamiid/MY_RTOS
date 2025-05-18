@@ -7,16 +7,20 @@
 /****************************************************************/
 #include <string.h>
 #include "STD_TYPES.h"
-#include "Task.h"
 #include "System.h"
 #include "FIFO.h"
 #include "Porting_CortexM.h"
+#include "Task.h"
 #include "Scheduler.h"
+
+#include "MyRTOSConfig.h"
 /* Ready Queue for the OS scheduler */
-OS_tBuffer Global_structReadyQueue;
-OS_structTask* Global_structReadyQueueFIFO[100];
+OS_tBuffer Global_structReadyQueue[OS_TASK_PRIORITY_LEVELS]; // 8 * 32 = 256
+OS_structTask* Global_structReadyQueueFIFO[OS_TASK_PRIORITY_LEVELS][5];
 /* Idle Task Structure */
 OS_structTask Global_structIdleTask;
+
+extern u8 Global_u8Scheduler;
 
 /** OS_voidSortSchedulerTable
  * @brief Sorts the scheduler table based on task priorities.
@@ -99,6 +103,47 @@ void OS_voidUpdateReadyQueue(){
     }
 }
 
+// For 32-bit
+static inline uint8_t FindHighestSetBit32(uint32_t value) {
+    return 31 - __builtin_clz(value); // returns index of MSB set
+}
+
+// For 8-bit
+static inline uint8_t FindHighestSetBit8(uint8_t value) {
+	 return 7 - __builtin_clz((uint32_t)value) + 24; // Adjusted for 8-bit value (32 - 8 = 24)
+}
+
+void OS_MarkTaskReady(OS_structTask* task) {
+    uint8_t prio = task->Priority;
+    uint8_t group = prio / OS_TASKS_NO_OF_PRIORITIES_PER_CLUSTER;
+    uint8_t offset = prio % OS_TASKS_NO_OF_PRIORITIES_PER_CLUSTER;
+
+    uint8_t queueIndex = group * OS_TASKS_NO_OF_PRIORITIES_PER_CLUSTER + offset;
+    task->TaskState = OS_TASK_READY;
+
+    OS_enumFifoEnqueue(&Global_structReadyQueue[queueIndex], task);
+
+    OS_StructOS.bitMap1[group] |= (1 << offset);
+    OS_StructOS.bitMap0 |= (1U << group);
+}
+
+void OS_MarkTaskNotReady(OS_structTask* task) {
+    u8 prio = task->Priority;
+    uint8_t group = prio / OS_TASKS_NO_OF_PRIORITIES_PER_CLUSTER;
+    uint8_t offset = prio % OS_TASKS_NO_OF_PRIORITIES_PER_CLUSTER;
+
+    // Clear the bit in ReadyBitmap[group]
+    OS_StructOS.bitMap1[group] &= ~(1 << (7 - offset));
+
+    // If no more ready tasks in this group, clear the bit in GroupBitmap
+    if (OS_StructOS.bitMap1[group] == 0) {
+    	OS_StructOS.bitMap0 &= ~(1UL << (31 - group));
+    }
+
+    // Optional: Update task state
+    task->TaskState = OS_TASK_SUSPEND;  // Or OS_TASK_WAITING, etc.
+}
+
 /** OS_voidDecideNext
  * @brief Decides the next task to run on the CPU.
  *
@@ -126,35 +171,37 @@ void OS_voidUpdateReadyQueue(){
  * // The next task to run is now decided and ready to be scheduled.
  * @endcode
  */
-void OS_voidDecideNext(){
-	/* 1- Check if ready queue is not empty and current task running CPU
-	 * is not suspend then maintain current task running */
-	if((Global_structReadyQueue.counter == 0) && (OS_StructOS.CurrentTask->TaskState != OS_TASK_SUSPEND)){
-		// Mark the current task running
-		OS_StructOS.CurrentTask->TaskState = OS_TASK_RUNNING;
-		// Enqueue the current task
-		OS_enumFifoEnqueue(&Global_structReadyQueue, OS_StructOS.CurrentTask);
-		// Make the next
-		OS_StructOS.NextTask = OS_StructOS.CurrentTask;
-	}
-	else{
-		// Get the next task from queue
-		OS_enumFifoDequeue(&Global_structReadyQueue, &OS_StructOS.NextTask);
+void OS_voidDecideNext() {
+    // No ready task and current still active
+    if ((OS_StructOS.bitMap0 == 0) && (OS_StructOS.CurrentTask->TaskState != OS_TASK_SUSPEND)) {
+        OS_StructOS.CurrentTask->TaskState = OS_TASK_RUNNING;
+        OS_StructOS.NextTask = OS_StructOS.CurrentTask;
+        return;
+    }
 
-		if(!OS_StructOS.NextTask)
-			OS_StructOS.NextTask = &Global_structIdleTask;
-		// make it's state running
-		OS_StructOS.NextTask->TaskState = OS_TASK_RUNNING ;
-		/* Before enqueue the current task make sure that it has the same priority as next task
-		    to maintain round robin */
-		if((OS_StructOS.NextTask->Priority == OS_StructOS.CurrentTask->Priority)&&(OS_StructOS.CurrentTask->TaskState!=OS_TASK_SUSPEND)){
-			// enqueue the current task to ready queue
-			OS_enumFifoEnqueue(&Global_structReadyQueue, OS_StructOS.CurrentTask);
-			// make it's state ready
-			OS_StructOS.CurrentTask->TaskState = OS_TASK_READY ;
-		}
-	}
+    // Find highest priority task
+    uint8_t group = FindHighestSetBit32(OS_StructOS.bitMap0);
+    uint8_t prioInGroup = FindHighestSetBit8(OS_StructOS.bitMap1[group]);
+    uint8_t queueIndex = group * OS_TASKS_NO_OF_PRIORITIES_PER_CLUSTER + prioInGroup;
+
+    OS_structTask* next;
+    OS_enumFifoDequeue(&Global_structReadyQueue[queueIndex], &next);
+    if (next == NULL) {
+        OS_StructOS.NextTask = &Global_structIdleTask;
+        return;
+    }
+
+    // Assign next task
+    next->TaskState = OS_TASK_RUNNING;
+    OS_StructOS.NextTask = next;
+
+    // Optional: round robin enqueue of current if same priority
+    if ((OS_StructOS.CurrentTask->TaskState != OS_TASK_SUSPEND) &&
+        (OS_StructOS.CurrentTask->Priority == next->Priority)) {
+        OS_MarkTaskReady(OS_StructOS.CurrentTask);
+    }
 }
+
 /** OS_voidSvcServices
  * @brief Handles Supervisor Call (SVC) services in Handler Mode.
  *
@@ -187,24 +234,26 @@ void OS_voidDecideNext(){
  * @endcode
  */
 void OS_voidSvcServices(pu32 Add_u32StackFrame){
+	OS_structTask* task = (OS_structTask*)Add_u32StackFrame[0];
 	u8 SVC_ID = *((u8*)(((u8*)Add_u32StackFrame[6])-2));
 	switch(SVC_ID){
 		case SVC_ACTIVATE:/* Activate Task */
-		case SVC_TERMINATE:/* Terminate Task */
-			/* 1- Update waiting queue (scheduler table) */
-			OS_voidSortSchedulerTable();
-			/* 2- Update ready queue */
-			OS_voidUpdateReadyQueue();
-
+			OS_MarkTaskReady(task);
 			if(OS_StructOS.OS_enumMode == OS_RUNNING){
 				if(strcmp(OS_StructOS.CurrentTask->TaskName,"IDLE")!=0){
 					/* 3- What next? */
+					Global_u8Scheduler ^=1;
 					OS_voidDecideNext();
+					Global_u8Scheduler ^=1;
 					/* 4- Trigger PendSV */
+					if(OS_StructOS.NextTask && OS_StructOS.NextTask != OS_StructOS.CurrentTask)
 					OS_TRIGGER_PENDSV();
 
 				}
 			}
+			break;
+		case SVC_TERMINATE:/* Terminate Task */
+
 		break;
 		case SVC_WAITING:/* Suspend Task */
 			/* 1- Update waiting queue (scheduler table) */

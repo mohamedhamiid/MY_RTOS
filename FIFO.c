@@ -186,3 +186,12 @@ OS_enumBufferStatus OS_enumIsFifoFull (OS_tBuffer* fifo){
 
 	return FIFO_NO_ERROR;
 }
+
+OS_enumBufferStatus OS_enumIsFifoEmpty(OS_tBuffer* fifo){
+
+	/* fifo empty */
+	if (fifo->head == fifo->tail)
+		return FIFO_EMPTY;
+	else
+		return FIFO_NO_ERROR;
+}
